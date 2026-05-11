@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'screens/announcements_list_screen.dart';
+import 'screens/reports_list_screen.dart';
+import 'screens/archive_screen.dart';
 
 void main() {
   runApp(const BarangayBulletinApp());
@@ -33,24 +36,9 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(
-      child: Text(
-        'Announcements Tab',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
-    const Center(
-      child: Text(
-        'Reports Tab',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
-    const Center(
-      child: Text(
-        'Archive Tab',
-        style: TextStyle(fontSize: 24),
-      ),
-    ),
+    const AnnouncementsListScreen(),
+    const ReportsListScreen(),
+    const ArchiveScreen(),
   ];
 
   @override
@@ -58,8 +46,8 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Barangay Bulletin'),
-        backgroundColor: const Color.fromARGB(255, 255, 111, 183),
-        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+        backgroundColor: const Color.fromARGB(255, 243, 33, 138),
+        foregroundColor: Colors.white,
         centerTitle: true,
       ),
       body: _screens[_selectedIndex],
