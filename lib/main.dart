@@ -34,12 +34,35 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-
-  final List<Widget> _screens = [
-    const AnnouncementsListScreen(),
-    const ReportsListScreen(),
-    const ArchiveScreen(),
+  
+  // State moved here - this persists across tab switches
+  List<Map<String, String>> announcements = [
+    {
+      'title': 'Announcement 1',
+      'body': 'This is the content for announcement 1.',
+    },
+    {
+      'title': 'Announcement 2',
+      'body': 'This is the content for announcement 2. ',
+    },
+    {
+      'title': 'Announcement 3',
+      'body': 'This is the content for announcement 3. ',
+    },
   ];
+
+  // Methods to modify announcements from child screens
+  void addAnnouncement(Map<String, String> newAnnouncement) {
+    setState(() {
+      announcements.add(newAnnouncement);
+    });
+  }
+
+  void updateAnnouncement(int index, Map<String, String> updatedAnnouncement) {
+    setState(() {
+      announcements[index] = updatedAnnouncement;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +73,18 @@ class _MainScreenState extends State<MainScreen> {
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: _screens[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          AnnouncementsListScreen(
+            announcements: announcements,
+            onAddAnnouncement: addAnnouncement,
+            onUpdateAnnouncement: updateAnnouncement,
+          ),
+          const ReportsListScreen(),
+          const ArchiveScreen(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
