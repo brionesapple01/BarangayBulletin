@@ -35,7 +35,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   
-  // State moved here - this persists across tab switches
   List<Map<String, String>> announcements = [
     {
       'title': 'Announcement 1',
@@ -43,15 +42,32 @@ class _MainScreenState extends State<MainScreen> {
     },
     {
       'title': 'Announcement 2',
-      'body': 'This is the content for announcement 2. ',
+      'body': 'This is the content for announcement 2.',
     },
     {
       'title': 'Announcement 3',
-      'body': 'This is the content for announcement 3. ',
+      'body': 'This is the content for announcement 3.',
     },
   ];
 
-  // Methods to modify announcements from child screens
+  List<Map<String, String>> reports = [
+    {
+      'title': 'Report 1',
+      'body': 'Details of report 1.',
+      'status': 'Pending',
+    },
+    {
+      'title': 'Report 2',
+      'body': 'Details of report 2.',
+      'status': 'In Progress',
+    },
+    {
+      'title': 'Report 3',
+      'body': 'Details of report 3.',
+      'status': 'Resolved',
+    },
+  ];
+
   void addAnnouncement(Map<String, String> newAnnouncement) {
     setState(() {
       announcements.add(newAnnouncement);
@@ -61,6 +77,18 @@ class _MainScreenState extends State<MainScreen> {
   void updateAnnouncement(int index, Map<String, String> updatedAnnouncement) {
     setState(() {
       announcements[index] = updatedAnnouncement;
+    });
+  }
+
+  void addReport(Map<String, String> newReport) {
+    setState(() {
+      reports.add(newReport);
+    });
+  }
+
+  void updateReport(int index, Map<String, String> updatedReport) {
+    setState(() {
+      reports[index] = updatedReport;
     });
   }
 
@@ -81,7 +109,11 @@ class _MainScreenState extends State<MainScreen> {
             onAddAnnouncement: addAnnouncement,
             onUpdateAnnouncement: updateAnnouncement,
           ),
-          const ReportsListScreen(),
+          ReportsListScreen(
+            reports: reports,
+            onAddReport: addReport,
+            onUpdateReport: updateReport,
+          ),
           const ArchiveScreen(),
         ],
       ),
