@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'report_form_screen.dart';
 
 class ReportDetailScreen extends StatelessWidget {
-  final Map<String, String> report;
-  final int index;
-  final Function(int, Map<String, String>) onUpdate;
+  final int reportIndex;
 
   const ReportDetailScreen({
     super.key,
-    required this.report,
-    required this.index,
-    required this.onUpdate,
+    required this.reportIndex,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, String> sampleReport = {
+      'title': 'Report ${reportIndex + 1}',
+      'body': 'This is the detailed description of report ${reportIndex + 1}',
+    };
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Report Details'),
@@ -26,16 +27,14 @@ class ReportDetailScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ReportFormScreen(
-                    title: report['title'],
-                    body: report['body'],
-                    status: report['status'],
+                    title: sampleReport['title'],
+                    body: sampleReport['body'],
                   ),
                 ),
               );
 
               if (result != null) {
-                onUpdate(index, result);
-                Navigator.pop(context);
+                Navigator.pop(context, result);
               }
             },
           ),
@@ -47,49 +46,17 @@ class ReportDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              report['title']!,
+              sampleReport['title']!,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: _getStatusColor(report['status'] ?? 'Pending'),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                report['status'] ?? 'Pending',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 16),
-            Text(
-              report['body']!,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(sampleReport['body']!),
           ],
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Resolved':
-        return Colors.green;
-      case 'In Progress':
-        return Colors.orange;
-      case 'Pending':
-      default:
-        return Colors.red;
-    }
   }
 }
