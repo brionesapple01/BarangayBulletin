@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/announcements_list_screen.dart';
 import 'screens/reports_list_screen.dart';
 import 'screens/archive_screen.dart';
 
-void main() {
-  runApp(const BarangayBulletinApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox('announcements');
+  runApp(const MyApp());
 }
 
-class BarangayBulletinApp extends StatelessWidget {
-  const BarangayBulletinApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,92 +38,31 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  
-  List<Map<String, String>> announcements = [
-    {
-      'title': 'Announcement 1',
-      'body': 'This is the content for announcement 1.',
-    },
-    {
-      'title': 'Announcement 2',
-      'body': 'This is the content for announcement 2.',
-    },
-    {
-      'title': 'Announcement 3',
-      'body': 'This is the content for announcement 3.',
-    },
-  ];
-
-  List<Map<String, String>> reports = [
-    {
-      'title': 'Report 1',
-      'body': 'Details of report 1.',
-      'status': 'Pending',
-    },
-    {
-      'title': 'Report 2',
-      'body': 'Details of report 2.',
-      'status': 'In Progress',
-    },
-    {
-      'title': 'Report 3',
-      'body': 'Details of report 3.',
-      'status': 'Resolved',
-    },
-  ];
-
-  void addAnnouncement(Map<String, String> newAnnouncement) {
-    setState(() {
-      announcements.add(newAnnouncement);
-    });
-  }
-
-  void updateAnnouncement(int index, Map<String, String> updatedAnnouncement) {
-    setState(() {
-      announcements[index] = updatedAnnouncement;
-    });
-  }
-
-  void addReport(Map<String, String> newReport) {
-    setState(() {
-      reports.add(newReport);
-    });
-  }
-
-  void updateReport(int index, Map<String, String> updatedReport) {
-    setState(() {
-      reports[index] = updatedReport;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Barangay Bulletin'),
+        title: Text(
+          _selectedIndex == 0 ? 'Announcements' : 
+          _selectedIndex == 1 ? 'Reports' : 'Archive',
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color.fromARGB(255, 243, 33, 138),
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: [
-          AnnouncementsListScreen(
-            announcements: announcements,
-            onAddAnnouncement: addAnnouncement,
-            onUpdateAnnouncement: updateAnnouncement,
-          ),
-          ReportsListScreen(
-            reports: reports,
-            onAddReport: addReport,
-            onUpdateReport: updateReport,
-          ),
-          const ArchiveScreen(),
+        children: const [
+          AnnouncementsListScreen(),
+          ReportsListScreen(),
+          ArchiveScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
+        onTap: (int index) {  
           setState(() {
             _selectedIndex = index;
           });

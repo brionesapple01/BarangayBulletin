@@ -3,14 +3,8 @@ import 'package:flutter/material.dart';
 class ReportFormScreen extends StatefulWidget {
   final String? title;
   final String? body;
-  final String? status;
 
-  const ReportFormScreen({
-    super.key,
-    this.title,
-    this.body,
-    this.status,
-  });
+  const ReportFormScreen({super.key, this.title, this.body});
 
   @override
   State<ReportFormScreen> createState() => _ReportFormScreenState();
@@ -19,14 +13,12 @@ class ReportFormScreen extends StatefulWidget {
 class _ReportFormScreenState extends State<ReportFormScreen> {
   late TextEditingController titleController;
   late TextEditingController bodyController;
-  late String selectedStatus;
 
   @override
   void initState() {
     super.initState();
     titleController = TextEditingController(text: widget.title ?? '');
     bodyController = TextEditingController(text: widget.body ?? '');
-    selectedStatus = widget.status ?? 'Pending';
   }
 
   @override
@@ -38,7 +30,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isEditMode = widget.title != null || widget.body != null;
+    final isEditMode = widget.title != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,12 +39,11 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: titleController,
               decoration: const InputDecoration(
-                labelText: 'Issue Title',
+                labelText: 'Report Title',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -60,35 +51,10 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
             TextField(
               controller: bodyController,
               decoration: const InputDecoration(
-                labelText: 'Issue Description',
+                labelText: 'Report Description',
                 border: OutlineInputBorder(),
               ),
               maxLines: 5,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Status',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: selectedStatus,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'Pending', child: Text('Pending')),
-                DropdownMenuItem(value: 'In Progress', child: Text('In Progress')),
-                DropdownMenuItem(value: 'Resolved', child: Text('Resolved')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  selectedStatus = value!;
-                });
-              },
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -96,7 +62,6 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                 final result = {
                   'title': titleController.text,
                   'body': bodyController.text,
-                  'status': selectedStatus,
                 };
                 Navigator.pop(context, result);
               },
