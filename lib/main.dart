@@ -8,6 +8,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('announcements');
+  await Hive.openBox('reports');
   runApp(const MyApp());
 }
 
