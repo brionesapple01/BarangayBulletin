@@ -24,6 +24,12 @@ class _ReportsListScreenState extends State<ReportsListScreen> {
     super.initState();
     _box = Hive.box('reports');
     
+    _box.watch().listen((event) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    
     if (_box.isEmpty) {
       _addSampleData();
     }
