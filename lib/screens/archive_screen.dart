@@ -10,12 +10,16 @@ class ArchiveScreen extends StatefulWidget {
 }
 
 class _ArchiveScreenState extends State<ArchiveScreen> {
-  final List<String> _typeFilters = ['All', 'Announcements Only', 'Reports Only'];
+  final List<String> _typeFilters = [
+    'All',
+    'Announcements Only',
+    'Reports Only'
+  ];
   String _selectedType = 'All';
-  
+
   late Box _announcementsBox;
   late Box _reportsBox;
-  
+
   List<Map<String, dynamic>> _archivedItems = [];
 
   @override
@@ -23,25 +27,25 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     super.initState();
     _announcementsBox = Hive.box('announcements');
     _reportsBox = Hive.box('reports');
-    
+
     _announcementsBox.watch().listen((event) {
       if (mounted) {
         _loadArchivedItems();
       }
     });
-    
+
     _reportsBox.watch().listen((event) {
       if (mounted) {
         _loadArchivedItems();
       }
     });
-    
+
     _loadArchivedItems();
   }
 
   void _loadArchivedItems() {
     final List<Map<String, dynamic>> items = [];
-    
+
     for (var key in _announcementsBox.keys) {
       final item = _announcementsBox.get(key);
       if (item != null && item['isDeleted'] == true) {
@@ -55,7 +59,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         });
       }
     }
-    
+
     for (var key in _reportsBox.keys) {
       final item = _reportsBox.get(key);
       if (item != null && item['isDeleted'] == true) {
@@ -69,11 +73,12 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         });
       }
     }
-    
+
     items.sort((a, b) {
-      return DateTime.parse(b['deletedAt']).compareTo(DateTime.parse(a['deletedAt']));
+      return DateTime.parse(b['deletedAt'])
+          .compareTo(DateTime.parse(a['deletedAt']));
     });
-    
+
     if (mounted) {
       setState(() {
         _archivedItems = items;
@@ -83,7 +88,9 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
 
   List<Map<String, dynamic>> _getFilteredItems() {
     if (_selectedType == 'Announcements Only') {
-      return _archivedItems.where((item) => item['type'] == 'Announcement').toList();
+      return _archivedItems
+          .where((item) => item['type'] == 'Announcement')
+          .toList();
     } else if (_selectedType == 'Reports Only') {
       return _archivedItems.where((item) => item['type'] == 'Report').toList();
     }
@@ -91,14 +98,15 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   }
 
   void _restoreItem(Map<String, dynamic> item) async {
-    final box = item['box'] == 'announcements' ? _announcementsBox : _reportsBox;
+    final box =
+        item['box'] == 'announcements' ? _announcementsBox : _reportsBox;
     final Map<String, dynamic> updatedData = Map.from(item['originalData']);
     updatedData['isDeleted'] = false;
     updatedData['deletedAt'] = null;
-    
+
     await box.put(item['id'], updatedData);
     _loadArchivedItems();
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -128,7 +136,9 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
             ),
             TextButton(
               onPressed: () async {
-                final box = item['box'] == 'announcements' ? _announcementsBox : _reportsBox;
+                final box = item['box'] == 'announcements'
+                    ? _announcementsBox
+                    : _reportsBox;
                 await box.delete(item['id']);
                 _loadArchivedItems();
                 if (mounted) {
@@ -154,168 +164,201 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredItems = _getFilteredItems();
-    
+
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height: 50,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _typeFilters.length,
-              itemBuilder: (context, index) {
-                final String type = _typeFilters[index];
-                final bool isSelected = _selectedType == type;
-                
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(type),
-                    selected: isSelected,
-                    onSelected: (bool selected) {
-                      setState(() {
-                        _selectedType = type;
-                      });
-                    },
-                    backgroundColor: Colors.grey[200],
-                    selectedColor: const Color.fromARGB(255, 243, 33, 149),
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFFFF1F6),
+              Color(0xFFF8F9FF),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              height: 50,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _typeFilters.length,
+                itemBuilder: (context, index) {
+                  final String type = _typeFilters[index];
+                  final bool isSelected = _selectedType == type;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      selectedColor: const Color(0xFFE91E63),
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      label: Text(type),
+                      selected: isSelected,
+                      onSelected: (bool selected) {
+                        setState(() {
+                          _selectedType = type;
+                        });
+                      },
+                      labelStyle: TextStyle(
+                        color:
+                            isSelected ? Colors.white : const Color(0xFFE91E63),
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          
-          const Divider(height: 1),
-          
-          Expanded(
-            child: filteredItems.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.archive_outlined,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Nothing in the archive',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
+            const Divider(height: 1),
+            Expanded(
+              child: filteredItems.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.archive_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Deleted items will appear here',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nothing in the archive',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Deleted items will appear here',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredItems[index];
+                        return _buildArchiveCard(item);
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: filteredItems.length,
-                    itemBuilder: (context, index) {
-                      final item = filteredItems[index];
-                      return _buildArchiveCard(item);
-                    },
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildArchiveCard(Map<String, dynamic> item) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 2,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: item['type'] == 'Announcement' 
-              ? Colors.blue[100]
-              : Colors.orange[100],
-          child: Icon(
-            item['type'] == 'Announcement' 
-                ? Icons.campaign
-                : Icons.report_problem,
-            color: item['type'] == 'Announcement' 
-                ? Colors.blue[700]
-                : Colors.orange[700],
-            size: 20,
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-        ),
-        title: Text(
-          item['title'].toString(),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          leading: CircleAvatar(
+            backgroundColor: item['type'] == 'Announcement'
+                ? Colors.blue[100]
+                : Colors.orange[100],
+            child: Icon(
+              item['type'] == 'Announcement'
+                  ? Icons.campaign
+                  : Icons.report_problem,
+              color: item['type'] == 'Announcement'
+                  ? Colors.blue[700]
+                  : Colors.orange[700],
+              size: 20,
+            ),
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: item['type'] == 'Announcement' 
-                    ? Colors.blue[50]
-                    : Colors.orange[50],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                item['type'].toString(),
-                style: TextStyle(
-                  color: item['type'] == 'Announcement' 
-                      ? Colors.blue[700]
-                      : Colors.orange[700],
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          title: Text(
+            item['title'].toString(),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: item['type'] == 'Announcement'
+                      ? Colors.blue[50]
+                      : Colors.orange[50],
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Text(
+                  item['type'].toString(),
+                  style: TextStyle(
+                    color: item['type'] == 'Announcement'
+                        ? Colors.blue[700]
+                        : Colors.orange[700],
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(Icons.delete_outline, size: 12, color: Colors.grey[600]),
-            const SizedBox(width: 4),
-            Text(
-              'Deleted: ${DateFormat('MMM dd, yyyy').format(DateTime.parse(item['deletedAt']))}',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () => _restoreItem(item),
-              icon: const Icon(Icons.restore, size: 18),
-              label: const Text('Restore'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+              const SizedBox(width: 8),
+              Icon(Icons.delete_outline, size: 12, color: Colors.grey[400]),
+              const SizedBox(width: 4),
+              Text(
+                'Deleted: ${DateFormat('MMM dd, yyyy').format(DateTime.parse(item['deletedAt']))}',
+                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
               ),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton.icon(
-              onPressed: () => _hardDelete(item),
-              icon: const Icon(Icons.delete_forever, size: 18),
-              label: const Text('Delete'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: () => _restoreItem(item),
+                icon: const Icon(Icons.restore, color: Colors.green),
               ),
-            ),
-          ],
+              IconButton(
+                onPressed: () => _hardDelete(item),
+                icon: const Icon(Icons.delete_forever, color: Colors.red),
+              ),
+            ],
+          ),
         ),
       ),
     );

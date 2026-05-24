@@ -20,10 +20,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Barangay Bulletin',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 243, 33, 166),
-        ),
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF6F7FB),
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.black,
+        ),
+        cardTheme: const CardThemeData(
+          color: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(24)),
+          ),
+        ),
       ),
       home: const MainScreen(),
     );
@@ -44,14 +55,20 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
         title: Text(
-          _selectedIndex == 0 ? 'Announcements' : 
-          _selectedIndex == 1 ? 'Reports' : 'Archive',
-          style: const TextStyle(color: Colors.white),
+          _selectedIndex == 0
+              ? "Announcements"
+              : _selectedIndex == 1
+                  ? "Reports"
+                  : "Archive",
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: const Color.fromARGB(255, 243, 33, 138),
-        foregroundColor: Colors.white,
-        centerTitle: true,
       ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -61,31 +78,47 @@ class _MainScreenState extends State<MainScreen> {
           ArchiveScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (int index) {  
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        selectedItemColor: const Color.fromARGB(255, 243, 33, 149),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.campaign),
-            label: 'Announcements',
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20,
+              color: Colors.black12,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            backgroundColor: Colors.white,
+            selectedItemColor: const Color(0xFFE91E63),
+            unselectedItemColor: Colors.grey,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.campaign),
+                label: "Announcements",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.report_problem),
+                label: "Reports",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.archive),
+                label: "Archive",
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report_problem),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.archive),
-            label: 'Archive',
-          ),
-        ],
+        ),
       ),
     );
   }
