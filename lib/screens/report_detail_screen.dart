@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'report_form_screen.dart';
@@ -6,10 +7,7 @@ import 'report_form_screen.dart';
 class ReportDetailScreen extends StatefulWidget {
   final String reportId;
 
-  const ReportDetailScreen({
-    super.key,
-    required this.reportId,
-  });
+  const ReportDetailScreen({super.key, required this.reportId});
 
   @override
   State<ReportDetailScreen> createState() => _ReportDetailScreenState();
@@ -19,7 +17,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   late Box _box;
   late Map<String, dynamic> _report;
   bool _isLoading = true;
-
   final List<String> _statusOptions = ['Pending', 'In Progress', 'Resolved'];
 
   @override
@@ -31,9 +28,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   void _loadReport() {
     final dynamic data = _box.get(widget.reportId);
-    if (data != null) {
-      _report = Map<String, dynamic>.from(data);
-    }
+    if (data != null) _report = Map<String, dynamic>.from(data);
     _isLoading = false;
   }
 
@@ -41,26 +36,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     final Map<String, dynamic> updated = Map.from(_report);
     updated['status'] = newStatus;
     await _box.put(widget.reportId, updated);
-    setState(() {
-      _report = updated;
-    });
+    setState(() => _report = updated);
   }
 
   void _editReport() async {
     final dynamic result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReportFormScreen(
-          report: _report,
-        ),
-      ),
+          builder: (context) => ReportFormScreen(report: _report)),
     );
-
     if (result != null) {
       await _box.put(widget.reportId, result);
-      setState(() {
-        _report = Map<String, dynamic>.from(result);
-      });
+      setState(() => _report = Map<String, dynamic>.from(result));
     }
   }
 
@@ -73,9 +60,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           content: const Text('Are you sure you want to delete this report?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -85,8 +70,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 updated['deletedAt'] = DateTime.now().toIso8601String();
                 await _box.put(widget.reportId, updated);
                 if (mounted) {
-                  Navigator.pop(context);
-                  Navigator.pop(context, true);
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context, true); // Close detail screen
                 }
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -101,182 +86,136 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final String category = _report['category'].toString();
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFFFFF5F7),
       appBar: AppBar(
         title: const Text('Report Details'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        foregroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: Color(0xFFE91E63)),
-            onPressed: _editReport,
-          ),
+              icon: const Icon(Icons.edit, color: Color(0xFFFF8FA3)),
+              onPressed: _editReport),
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: _softDelete,
-          ),
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: _softDelete),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFF1F6),
-              Color(0xFFF8F9FF),
-            ],
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Status',
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFFF8FA3)),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: _statusOptions.map((String status) {
+                      final bool isSelected = _report['status'] == status;
+                      return ChoiceChip(
+                        label: Text(status),
+                        selected: isSelected,
+                        onSelected: (bool selected) =>
+                            selected ? _updateStatus(status) : null,
+                        backgroundColor: Colors.white,
+                        selectedColor: _getStatusColor(status),
+                        labelStyle: GoogleFonts.inter(
+                          color: isSelected
+                              ? Colors.white
+                              : _getStatusColor(status),
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                        side: BorderSide(
+                            color: _getStatusColor(status).withOpacity(0.3)),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 24),
+            // Header Row
+            Row(
               children: [
-                // Status Section
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: _getCategoryColor(category),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Status',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFE91E63),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        children: _statusOptions.map((String status) {
-                          final bool isSelected = _report['status'] == status;
-                          return ChoiceChip(
-                            label: Text(status),
-                            selected: isSelected,
-                            onSelected: (bool selected) {
-                              if (selected) {
-                                _updateStatus(status);
-                              }
-                            },
-                            backgroundColor: Colors.white,
-                            selectedColor: _getStatusColor(status),
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : _getStatusColor(status),
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                            side: BorderSide(
-                              color: _getStatusColor(status).withOpacity(0.5),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                  child: Text(
+                    category,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // Category Badge and Date
+                const Spacer(),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getCategoryColor(category),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        category,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Icon(Icons.access_time,
-                            size: 14, color: Colors.grey[400]),
-                        const SizedBox(width: 4),
-                        Text(
-                          DateFormat('MMM dd, yyyy h:mm a').format(
-                              DateTime.parse(
-                                  _report['dateReported'].toString())),
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[400]),
-                        ),
-                      ],
+                    Icon(Icons.access_time,
+                        size: 14, color: const Color(0xFFBDBDBD)),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('MMM dd, yyyy h:mm a')
+                          .format(DateTime.parse(_report['dateReported'])),
+                      style: GoogleFonts.inter(
+                          fontSize: 12, color: const Color(0xFFBDBDBD)),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 20),
-
-                // Title
-                Text(
-                  _report['title'].toString(),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-                const Divider(color: Color(0xFFEEEEEE)),
-                const SizedBox(height: 16),
-
-                // Description
-                Text(
-                  _report['description'].toString(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF555555),
-                    height: 1.5,
-                  ),
-                ),
               ],
             ),
-          ),
+            const SizedBox(height: 24),
+            // Title
+            Text(
+              _report['title'],
+              style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF2D2D2D)),
+            ),
+            const SizedBox(height: 20),
+            const Divider(color: Color(0xFFEEEEEE)),
+            const SizedBox(height: 20),
+            // Description
+            Text(
+              _report['description'],
+              style: GoogleFonts.inter(
+                  fontSize: 16, color: const Color(0xFF555555), height: 1.6),
+            ),
+          ],
         ),
       ),
     );
@@ -285,30 +224,28 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Pending':
-        return Colors.orange;
+        return const Color(0xFFFFB74D);
       case 'In Progress':
-        return Colors.blue;
+        return const Color(0xFF64B5F6);
       case 'Resolved':
-        return Colors.green;
+        return const Color(0xFF81C784);
       default:
-        return Colors.grey;
+        return const Color(0xFFBDBDBD);
     }
   }
 
   Color _getCategoryColor(String category) {
     switch (category) {
       case 'Road':
-        return Colors.brown;
+        return const Color(0xFF795548);
       case 'Power':
-        return Colors.amber;
+        return const Color(0xFFFFA726);
       case 'Water':
-        return Colors.cyan;
+        return const Color(0xFF4FC3F7);
       case 'Safety':
-        return Colors.purple;
-      case 'Other':
-        return Colors.grey;
+        return const Color(0xFFBA68C8);
       default:
-        return Colors.grey;
+        return const Color(0xFFBDBDBD);
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'announcement_detail_screen.dart';
@@ -23,30 +24,14 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
   String _selectedCategory = 'All';
   late Box _box;
 
-  late VoidCallback _listener;
-
   @override
   void initState() {
     super.initState();
     _box = Hive.box('announcements');
-
-    _listener = () {
-      if (mounted) {
-        setState(() {});
-      }
-    };
     _box.watch().listen((event) {
-      _listener();
+      if (mounted) setState(() {});
     });
-
-    if (_box.isEmpty) {
-      _addSampleData();
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    if (_box.isEmpty) _addSampleData();
   }
 
   void _addSampleData() {
@@ -88,7 +73,6 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
         'deletedAt': null,
       },
     ];
-
     for (var announcement in sampleAnnouncements) {
       _box.put(announcement['id'], announcement);
     }
@@ -96,39 +80,30 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
 
   List<Map<String, dynamic>> _getAnnouncements() {
     final List<Map<String, dynamic>> allAnnouncements = [];
-
     for (var key in _box.keys) {
       final item = _box.get(key);
       if (item != null && item['isDeleted'] == false) {
         allAnnouncements.add(Map<String, dynamic>.from(item));
       }
     }
-
     List<Map<String, dynamic>> filtered = List.from(allAnnouncements);
     if (_selectedCategory != 'All') {
       filtered =
           filtered.where((a) => a['category'] == _selectedCategory).toList();
     }
-
     filtered.sort((a, b) {
-      if (a['isPinned'] != b['isPinned']) {
-        return b['isPinned'] ? 1 : -1;
-      }
+      if (a['isPinned'] != b['isPinned']) return b['isPinned'] ? 1 : -1;
       return DateTime.parse(b['datePosted'])
           .compareTo(DateTime.parse(a['datePosted']));
     });
-
     return filtered;
   }
 
   void _addAnnouncement() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AnnouncementFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AnnouncementFormScreen()),
     );
-
     if (result != null) {
       await _box.put(result['id'], result);
       setState(() {});
@@ -137,226 +112,255 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> announcements = _getAnnouncements();
+    final announcements = _getAnnouncements();
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFF1F6),
-              Color(0xFFF8F9FF),
-            ],
+      backgroundColor: const Color(0xFFFFF5F7),
+      body: CustomScrollView(
+        slivers: [
+          // Header
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello, Resident! 👋',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2D2D2D),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Stay updated with barangay announcements',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: const Color(0xFF9E9E9E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            // Filter Chips
-            Container(
-              height: 50,
-              margin: const EdgeInsets.symmetric(vertical: 8),
+          // Category Chips
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 45,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: _categories.length,
                 itemBuilder: (context, index) {
-                  final String category = _categories[index];
-                  final bool isSelected = _selectedCategory == category;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                  final category = _categories[index];
+                  final isSelected = _selectedCategory == category;
+                  return Container(
+                    margin: const EdgeInsets.only(right: 12),
                     child: FilterChip(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      selectedColor: const Color(0xFFE91E63),
-                      backgroundColor: Colors.white,
-                      elevation: 0,
                       label: Text(category),
                       selected: isSelected,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          _selectedCategory = category;
-                        });
-                      },
-                      labelStyle: TextStyle(
+                      onSelected: (_) =>
+                          setState(() => _selectedCategory = category),
+                      backgroundColor: Colors.white,
+                      selectedColor: const Color(0xFFFFB7C5),
+                      labelStyle: GoogleFonts.inter(
                         color:
-                            isSelected ? Colors.white : const Color(0xFFE91E63),
+                            isSelected ? Colors.white : const Color(0xFF2D2D2D),
                         fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      shape: StadiumBorder(
+                        side: isSelected
+                            ? BorderSide.none
+                            : BorderSide(
+                                color:
+                                    const Color(0xFFFFB7C5).withOpacity(0.5)),
                       ),
                     ),
                   );
                 },
               ),
             ),
-
-            // Announcement List
-            Expanded(
-              child: announcements.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.campaign,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No announcements found',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _selectedCategory == 'All'
-                                ? 'Tap the + button to create one'
-                                : 'No announcements in this category',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: announcements.length,
-                      itemBuilder: (context, index) {
-                        final Map<String, dynamic> announcement =
-                            announcements[index];
-                        return _buildAnnouncementCard(announcement);
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addAnnouncement,
-        backgroundColor: const Color(0xFFE91E63),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text("New"),
-      ),
-    );
-  }
-
-  Widget _buildAnnouncementCard(Map<String, dynamic> announcement) {
-    final String category = announcement['category'].toString();
-
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 12,
-            offset: const Offset(0, 4),
           ),
+          // Announcement Count
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+              child: Row(
+                children: [
+                  Text(
+                    '${announcements.length} Announcements',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFFF8FA3),
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_selectedCategory != 'All')
+                    GestureDetector(
+                      onTap: () => setState(() => _selectedCategory = 'All'),
+                      child: Text(
+                        'Clear Filter',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFFFF8FA3),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // Announcement List
+          announcements.isEmpty
+              ? SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.campaign_outlined,
+                            size: 64, color: const Color(0xFFFFB7C5)),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No announcements yet',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF2D2D2D),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tap the + button to create one',
+                          style: GoogleFonts.inter(
+                              fontSize: 14, color: const Color(0xFF9E9E9E)),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = announcements[index];
+                      final category = item['category'].toString();
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 12,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      AnnouncementDetailScreen(
+                                    announcementId: item['id'].toString(),
+                                  ),
+                                ),
+                              );
+                              setState(() {});
+                            },
+                            borderRadius: BorderRadius.circular(24),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      if (item['isPinned'] == true)
+                                        const Icon(Icons.push_pin,
+                                            size: 16, color: Color(0xFFFF8FA3)),
+                                      if (item['isPinned'] == true)
+                                        const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          item['title'],
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF2D2D2D),
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _getCategoryColor(category),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          category,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    item['body'],
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        color: const Color(0xFF757575)),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.access_time,
+                                          size: 12,
+                                          color: const Color(0xFFBDBDBD)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        DateFormat('MMM dd, yyyy').format(
+                                            DateTime.parse(item['datePosted'])),
+                                        style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            color: const Color(0xFFBDBDBD)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: announcements.length,
+                  ),
+                ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () async {
-            final bool? result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AnnouncementDetailScreen(
-                  announcementId: announcement['id'].toString(),
-                ),
-              ),
-            );
-            if (result == true) {
-              setState(() {});
-            }
-          },
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    if (announcement['isPinned'] == true)
-                      const Icon(Icons.push_pin,
-                          size: 16, color: Colors.orange),
-                    if (announcement['isPinned'] == true)
-                      const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        announcement['title'].toString(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  announcement['body'].toString(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getCategoryColor(category),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        category,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(Icons.access_time, size: 12, color: Colors.grey[400]),
-                    const SizedBox(width: 4),
-                    Text(
-                      DateFormat('MMM dd, yyyy').format(DateTime.parse(
-                          announcement['datePosted'].toString())),
-                      style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addAnnouncement,
+        backgroundColor: const Color(0xFFFF8FA3),
+        elevation: 0,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }
@@ -364,15 +368,15 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
   Color _getCategoryColor(String category) {
     switch (category) {
       case 'Info':
-        return Colors.blue;
+        return const Color(0xFF6C5CE7);
       case 'Event':
-        return Colors.green;
+        return const Color(0xFF00B894);
       case 'Emergency':
-        return Colors.red;
+        return const Color(0xFFE17055);
       case 'Health':
-        return Colors.purple;
+        return const Color(0xFFA29BFE);
       default:
-        return Colors.grey;
+        return const Color(0xFFFFB7C5);
     }
   }
 }
